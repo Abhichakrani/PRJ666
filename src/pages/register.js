@@ -10,11 +10,14 @@ export default function RegisterPage() {
     email: '',
     password: '',
     name: '',
+    confirmPassword: ''
   });
   const [errors, setErrors] = useState({
     email: '',
     password: '',
     name: '',
+    
+    confirmPassword: '',
     general: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,6 +55,15 @@ export default function RegisterPage() {
         isValid = false;
       }
     }
+
+     if (!formData.confirmPassword) {
+    newErrors.confirmPassword = 'Please confirm your password';
+    isValid = false;
+  } else if (formData.password !== formData.confirmPassword) {
+    newErrors.confirmPassword = 'Passwords do not match';
+    isValid = false;
+  }
+
 
     // Validate name
     if (!formData.name) {
@@ -161,6 +173,7 @@ return (
             onChange={handleChange}
             className="w-full px-4 py-3 border-b border-gray-400 bg-transparent focus:outline-none focus:border-orange-500 placeholder-gray-500"
           />
+           {errors.confirmPassword && <p className="text-sm text-red-600">{errors.confirmPassword}</p>}
 
           <button
             type="submit"
