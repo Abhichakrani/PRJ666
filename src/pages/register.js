@@ -98,85 +98,81 @@ export default function RegisterPage() {
   };
 return (
   <div className="min-h-screen flex">
-    {/* Left panel */}
-    <div className="w-1/2 bg-black text-white flex items-center justify-center">
-      <div className="text-center px-8">
-        <h1 className="text-3xl font-bold mb-2">Community Service App</h1>
-        <p className="text-lg">Making Ontario Better,<br />One Report at a Time.</p>
+    {/* Left panel - Dark with orange accent */}
+    <div className="w-1/2 bg-[#0f0f11] text-white flex items-center justify-center">
+      <div className="text-left px-10">
+        <h1 className="text-5xl font-bold text-orange-500 leading-tight">
+          Community<br />Service<br />App
+        </h1>
+        <p className="mt-4 text-lg text-gray-300">
+          Making Ontario Better,<br />One Report at a Time.
+        </p>
       </div>
     </div>
 
-    {/* Right panel */}
-    <div className="w-1/2 flex items-center justify-center">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Create your account</h2>
-        </div>
+    {/* Right panel - Light form */}
+    <div className="w-1/2 bg-[#fdfbf6] flex items-center justify-center">
+      <div className="w-full max-w-md px-8">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-8">
+          Create your account
+        </h2>
 
         {errors.general && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
             {errors.general}
           </div>
         )}
 
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <input
-              type="text"
-              name="name"
-              placeholder="Full Name"
-              value={formData.name}
-              onChange={handleChange}
-              className={`w-full px-4 py-2 border ${errors.name ? 'border-red-500' : 'border-gray-300'} rounded`}
-            />
-            {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <input
+            type="text"
+            name="name"
+            placeholder="Full Name"
+            value={formData.name}
+            onChange={handleChange}
+            className={`w-full px-4 py-3 border-b border-gray-400 bg-transparent focus:outline-none focus:border-orange-500 placeholder-gray-500`}
+          />
+          {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
 
-            <input
-              type="email"
-              name="email"
-              placeholder="E-Mail Address"
-              value={formData.email}
-              onChange={handleChange}
-              className={`w-full px-4 py-2 border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded`}
-            />
-            {errors.email && <p className="text-sm text-red-600">{errors.email}</p>}
+          <input
+            type="email"
+            name="email"
+            placeholder="E-Mail Address"
+            value={formData.email}
+            onChange={handleChange}
+            className={`w-full px-4 py-3 border-b border-gray-400 bg-transparent focus:outline-none focus:border-orange-500 placeholder-gray-500`}
+          />
+          {errors.email && <p className="text-sm text-red-600">{errors.email}</p>}
 
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={handleChange}
-              className={`w-full px-4 py-2 border ${errors.password ? 'border-red-500' : 'border-gray-300'} rounded`}
-            />
-            {errors.password && <p className="text-sm text-red-600">{errors.password}</p>}
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+            className={`w-full px-4 py-3 border-b border-gray-400 bg-transparent focus:outline-none focus:border-orange-500 placeholder-gray-500`}
+          />
+          {errors.password && <p className="text-sm text-red-600">{errors.password}</p>}
 
-            <input
-              type="password"
-              name="confirmPassword"
-              placeholder="Confirm Password"
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded"
-            />
-          </div>
+          <input
+            type="password"
+            name="confirmPassword"
+            placeholder="Confirm Password"
+            onChange={handleChange}
+            className="w-full px-4 py-3 border-b border-gray-400 bg-transparent focus:outline-none focus:border-orange-500 placeholder-gray-500"
+          />
 
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-2 bg-black text-white rounded hover:bg-gray-800 transition"
+            className="w-full bg-orange-500 text-white py-3 rounded-full shadow-md hover:bg-orange-600 transition duration-300 font-semibold"
           >
             {isSubmitting ? 'Registering...' : 'Sign Up'}
           </button>
         </form>
-
-        <div className="text-center text-sm text-gray-600">
-          Already have an account?{' '}
-          <Link href="/login" className="font-medium text-black hover:underline">
-            Sign in
-          </Link>
-        </div>
       </div>
     </div>
   </div>
 );
+
 }
