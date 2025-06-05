@@ -1,191 +1,188 @@
-'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { validatePassword, validateEmail } from '@/lib/validation/auth';
+import { useState } from "react";
+import { useRouter } from "next/router";
 
-export default function RegisterPage() {
+export default function Register() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    name: '',
-    confirmPassword: ''
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirm: "",
   });
-  const [errors, setErrors] = useState({
-    email: '',
-    password: '',
-    name: '',
-    
-    confirmPassword: '',
-    general: '',
+  const [error, setError] = useState("");
+  const [showRules, setShowRules] = useState(false);
+  const [passwordRules, setPasswordRules] = useState({
+    length: false,
+    uppercase: false,
+    number: false,
+    special: false,
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear error when user types
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+    setForm({ ...form, [name]: value });
+
+    if (name === "password") {
+      setPasswordRules({
+        length: value.length >= 8,
+        uppercase: /[A-Z]/.test(value),
+        number: /[0-9]/.test(value),
+        special: /[@$!%*?&#^()_+=]/.test(value),
+      });
     }
-  };
-
-  const validateForm = () => {
-    let isValid = true;
-    const newErrors = { ...errors };
-
-    // Validate email
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-      isValid = false;
-    } else if (!validateEmail(formData.email)) {
-      newErrors.email = 'Invalid email format';
-      isValid = false;
-    }
-
-    // Validate password
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-      isValid = false;
-    } else {
-      const passwordValidation = validatePassword(formData.password);
-      if (!passwordValidation.valid) {
-        newErrors.password = passwordValidation.message || 'Invalid password';
-        isValid = false;
-      }
-    }
-
-     if (!formData.confirmPassword) {
-    newErrors.confirmPassword = 'Please confirm your password';
-    isValid = false;
-  } else if (formData.password !== formData.confirmPassword) {
-    newErrors.confirmPassword = 'Passwords do not match';
-    isValid = false;
-  }
-
-
-    // Validate name
-    if (!formData.name) {
-      newErrors.name = 'Name is required';
-      isValid = false;
-    }
-
-    setErrors(newErrors);
-    return isValid;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setErrors({ email: '', password: '', name: '', general: '' });
+    setError("");
 
-    if (!validateForm()) {
-      setIsSubmitting(false);
+    const passwordRegex =
+      /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_+=])[A-Za-z\d@$!%*?&#^()_+=]{8,}$/;
+
+    if (!passwordRegex.test(form.password)) {
+      setError(
+        "Password must be at least 8 characters and include one uppercase letter, one number, and one special character."
+      );
+      return;
+    }
+
+    if (form.password !== form.confirm) {
+      setError("Passwords do not match");
       return;
     }
 
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          password: form.password,
+        }),
       });
 
-      const data = await response.json();
-
-      if (!data.success) {
-        setErrors(prev => ({ ...prev, general: data.message }));
-      } else {
-        // Redirect to login page on successful registration
-        router.push('/login?registered=true');
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Registration failed!");
+        return;
       }
-    } catch (error) {
-      setErrors(prev => ({ ...prev, general: 'Registration failed. Please try again.' }));
-    } finally {
-      setIsSubmitting(false);
+
+      router.push("/login");
+    } catch {
+      setError("An unexpected error occurred!");
     }
   };
-return (
-  <div className="min-h-screen flex">
-    {/* Left panel - Dark with orange accent */}
-    <div className="w-1/2 bg-[#0f0f11] text-white flex items-center justify-center">
-      <div className="text-left px-10">
-        <h1 className="text-5xl font-bold text-orange-500 leading-tight">
-          Community<br />Service<br />App
-        </h1>
-        <p className="mt-4 text-lg text-gray-300">
-          Making Ontario Better,<br />One Report at a Time.
-        </p>
+
+  return (
+    <div className="flex min-h-screen font-sans">
+      {/* Left Panel */}
+      <div className="w-1/2 bg-black text-white flex flex-col justify-center items-start pl-20">
+<h1
+  onClick={() => router.push("/")}
+  className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-orange-500 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-orange-400 hover:via-yellow-300 hover:to-orange-500 leading-tight tracking-tight cursor-pointer transition-all duration-300 text-center sm:text-left"
+>
+  Community<br className="hidden sm:block" />Service<br className="hidden sm:block" />App
+</h1>
+
+        <p className="mt-6 text-lg text-gray-300">Making Ontario Better,<br />One Report at a Time.</p>
       </div>
-    </div>
 
-    {/* Right panel - Light form */}
-    <div className="w-1/2 bg-[#fdfbf6] flex items-center justify-center">
-      <div className="w-full max-w-md px-8">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-8">
-          Create your account
-        </h2>
+      {/* Right Panel */}
+      <div className="w-1/2 bg-[#fdfaf5] flex items-center justify-center">
+        <form onSubmit={handleSubmit} className="w-full max-w-sm px-4">
+          <h2 className="text-2xl font-semibold text-black mb-10 text-center">Create your account</h2>
 
-        {errors.general && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-            {errors.general}
+          <div className="mb-6">
+            <input
+              type="text"
+              name="name"
+              placeholder="Full Name"
+              value={form.name}
+              onChange={handleChange}
+              className="w-full bg-transparent border-b border-gray-400 focus:outline-none focus:border-black py-2 placeholder:text-gray-600"
+              required
+            />
           </div>
-        )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <input
-            type="text"
-            name="name"
-            placeholder="Full Name"
-            value={formData.name}
-            onChange={handleChange}
-            className={`w-full px-4 py-3 border-b border-gray-400 bg-transparent focus:outline-none focus:border-orange-500 placeholder-gray-500`}
-          />
-          {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
+          <div className="mb-6">
+            <input
+              type="email"
+              name="email"
+              placeholder="E-Mail Address"
+              value={form.email}
+              onChange={handleChange}
+              className="w-full bg-transparent border-b border-gray-400 focus:outline-none focus:border-black py-2 placeholder:text-gray-600"
+              required
+            />
+          </div>
 
-          <input
-            type="email"
-            name="email"
-            placeholder="E-Mail Address"
-            value={formData.email}
-            onChange={handleChange}
-            className={`w-full px-4 py-3 border-b border-gray-400 bg-transparent focus:outline-none focus:border-orange-500 placeholder-gray-500`}
-          />
-          {errors.email && <p className="text-sm text-red-600">{errors.email}</p>}
+<div className="mb-6">
+  <input
+    type="password"
+    name="password"
+    placeholder="Password"
+    value={form.password}
+    onChange={handleChange}
+    onFocus={() => setShowRules(true)}
+    onBlur={() => form.password === "" && setShowRules(false)}
+    className="w-full bg-transparent border-b border-gray-400 focus:outline-none focus:border-black py-2 placeholder:text-gray-600"
+    required
+  />
 
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            className={`w-full px-4 py-3 border-b border-gray-400 bg-transparent focus:outline-none focus:border-orange-500 placeholder-gray-500`}
-          />
-          {errors.password && <p className="text-sm text-red-600">{errors.password}</p>}
+  {showRules && (
+    <ul className="mt-2 ml-2 text-sm">
+      <li className={passwordRules.length ? "text-green-600" : "text-red-500"}>
+        {passwordRules.length ? "✔" : "✘"} At least 8 characters
+      </li>
+      <li className={passwordRules.uppercase ? "text-green-600" : "text-red-500"}>
+        {passwordRules.uppercase ? "✔" : "✘"} One uppercase letter
+      </li>
+      <li className={passwordRules.number ? "text-green-600" : "text-red-500"}>
+        {passwordRules.number ? "✔" : "✘"} One number
+      </li>
+      <li className={passwordRules.special ? "text-green-600" : "text-red-500"}>
+        {passwordRules.special ? "✔" : "✘"} One special character
+      </li>
+    </ul>
+  )}
+</div>
 
-          <input
-            type="password"
-            name="confirmPassword"
-            placeholder="Confirm Password"
-            onChange={handleChange}
-            className="w-full px-4 py-3 border-b border-gray-400 bg-transparent focus:outline-none focus:border-orange-500 placeholder-gray-500"
-          />
-           {errors.confirmPassword && <p className="text-sm text-red-600">{errors.confirmPassword}</p>}
+          <div className="mb-8">
+            <input
+              type="password"
+              name="confirm"
+              placeholder="Confirm Password"
+              value={form.confirm}
+              onChange={handleChange}
+              className="w-full bg-transparent border-b border-gray-400 focus:outline-none focus:border-black py-2 placeholder:text-gray-600"
+              required
+            />
+          </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-orange-500 text-white py-3 rounded-full shadow-md hover:bg-orange-600 transition duration-300 font-semibold"
-          >
-            {isSubmitting ? 'Registering...' : 'Sign Up'}
-          </button>
+        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+
+<button
+  type="submit"
+  className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-full font-semibold transition"
+>
+  Sign Up
+</button>
+
+{/* Creative Login Link */}
+<p className="mt-6 text-center text-sm text-gray-600">
+  Already part of the movement?{" "}
+  <span
+    onClick={() => router.push("/login")}
+    className="text-orange-500 font-semibold cursor-pointer hover:underline"
+  >
+    Log in here
+  </span>{" "}
+  and keep making Ontario better!
+</p>
+          
         </form>
       </div>
     </div>
-  </div>
-);
-
+  );
 }
