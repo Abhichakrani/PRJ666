@@ -1,7 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import issueRoutes from './api/issues.js';
-import notifyRoutes from './api/notify.js';
+import notifyRoutes from '../services/notificationService.js';
 
 const app = express();
 app.use(express.json());
