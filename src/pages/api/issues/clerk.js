@@ -4,6 +4,13 @@ import Issue from "../../../models/Issues";
 export default async function handler(req, res) {
   await connectToDatabase();
 
+   if (req.method === 'GET') {
+    const { clerkId } = req.query;
+    const issues = await Issue.find({ clerkId });
+    return res.status(200).json(issues);
+  }
+
+  
   if (req.method === "PATCH") {
     try {
       const { issueId, clerkId } = req.body;
