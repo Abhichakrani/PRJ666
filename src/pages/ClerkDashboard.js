@@ -1,8 +1,6 @@
-export default ClerkDashboard;
-
 import useSWR from 'swr';
 
-const ClerkDashboard = () => {
+export default function ClerkDashboard() {
   const { data: issues, mutate } = useSWR('/api/issues/clerk');
   
   const handleAcknowledge = async (issueId) => {
