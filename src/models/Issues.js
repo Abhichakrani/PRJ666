@@ -6,6 +6,7 @@ const issueSchema = new mongoose.Schema({
   image: { type: String, required: true },
   location: { type: String, required: true },
   residentId: { type: String, required: true },
+  clerkId:{ type: String, required:false},
   status: { type: String, default: "Pending" },
   createdAt: { type: Date, default: Date.now },
 });
