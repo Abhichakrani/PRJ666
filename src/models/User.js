@@ -6,6 +6,16 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, enum: ["resident", "clerk", "admin"], default: "resident" },
+address: {
+      type: String, // Only relevant for residents
+    },
+    preferredLanguage: {
+      type: String,
+      enum: ["English", "French"],
+      default: "English",
+    },
+
+    //  Password reset
     resetToken: String,
     resetTokenExpiry: Date,
   },
