@@ -20,7 +20,7 @@ export default function Login() {
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Login failed");
+        setError(data.error || "Login failed!");
         return;
       }
 
@@ -31,9 +31,9 @@ export default function Login() {
       if (role === "admin") {
         router.push("/admin-dashboard");
       } else if (role === "clerk") {
-        router.push("/clerk-dashboard");
+        router.push("/clerk/dashboard");
       } else {
-        router.push("/resident-dashboard");
+        router.push("/resident/dashboard");
       }
     } catch {
       setError("An unexpected error occurred");
