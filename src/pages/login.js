@@ -29,7 +29,7 @@ export default function Login() {
 
       const role = data.user.role;
       if (role === "admin") {
-        router.push("/admin-dashboard");
+        router.push("/admin/dashboard");
       } else if (role === "clerk") {
         router.push("/clerk/dashboard");
       } else {

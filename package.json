@@ -13,6 +13,7 @@
     "formidable": "^3.5.4",
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",
+    "lucide-react": "^0.525.0",
     "mongoose": "^8.15.1",
     "next": "^15.3.5",
     "nodemailer": "^7.0.3",
