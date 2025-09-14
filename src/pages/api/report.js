@@ -1,109 +1,74 @@
-import formidable from "formidable";
-import fs from "fs";
 import { connectToDatabase } from "@/lib/mongodb";
 import Issue from "@/models/Issue";
+import User from "@/models/User";
 import { verifyToken } from "@/middleware/auth";
-
-export const config = {
-  api: {
-    bodyParser: false, // Required for formidable
-  },
-};
+import { sendIssueCreatedEmail } from "@/utils/mailer";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ message: `Method ${req.method} Not Allowed` });
   }
 
-  await connectToDatabase();
+  try {
+    await connectToDatabase();
+    const decoded = verifyToken(req);
+    const userId = decoded.id;
 
-  const form = formidable({
-    keepExtensions: true,
-    maxFileSize: 10 * 1024 * 1024, // 10MB per file
-    multiples: true,
-  });
+    const {
+      title,
+      category,
+      description,
+      location,
+      latitude,
+      longitude,
+      images,
+    } = req.body;
 
-  form.parse(req, async (err, fields, files) => {
-    if (err) {
-      console.error("Form parse error:", err);
-      return res.status(500).json({ message: "Form parsing failed", error: err.message });
+    // Validate required fields
+    if (!title || !category || !description || !location || !latitude || !longitude) {
+      return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Debug log
-    console.log("Received files:", files);
+    // Create new issue
+    const issue = await Issue.create({
+      title,
+      category,
+      description,
+      location,
+      latitude,
+      longitude,
+      status: "Pending Approval",
+      userId,
+      images: images || [], // from Cloudinary
+      updates: [
+        {
+          text: "Issue submitted and pending approval",
+          status: "Pending Approval",
+          timestamp: new Date(),
+        },
+      ],
+    });
 
+    // Send email notification to the user who reported the issue
     try {
-      const decoded = verifyToken(req);
-      const userId = decoded.id;
-
-      // ✅ Extract fields as strings
-      const title = fields.title?.[0] || "";
-      const category = fields.category?.[0] || "";
-      const description = fields.description?.[0] || "";
-      const location = fields.location?.[0] || "";
-      const latitude = parseFloat(fields.latitude?.[0]);
-      const longitude = parseFloat(fields.longitude?.[0]);
-
-      // ✅ Move uploaded files to /public/uploads
-      const imagePaths = [];
-      if (files.images) {
-        try {
-          const fileArray = Array.isArray(files.images) ? files.images : [files.images];
-          console.log("Processing files:", fileArray.length);
-
-          for (const file of fileArray) {
-            try {
-              const fileName = Date.now() + "-" + file.originalFilename;
-              const newPath = `./public/uploads/${fileName}`;
-
-              // Ensure uploads directory exists
-              if (!fs.existsSync('./public/uploads')) {
-                fs.mkdirSync('./public/uploads', { recursive: true });
-              }
-
-              // Debug log
-              console.log("Copying file:", {
-                from: file.filepath,
-                to: newPath,
-                size: file.size
-              });
-
-              // In case of cross-device issue, use copy + unlink instead of rename
-              fs.copyFileSync(file.filepath, newPath);
-              fs.unlinkSync(file.filepath);
-
-              imagePaths.push(`/uploads/${fileName}`);
-            } catch (fileErr) {
-              console.error("Error processing file:", fileErr);
-              throw new Error(`File processing failed: ${fileErr.message}`);
-            }
-          }
-        } catch (filesErr) {
-          console.error("Error processing files array:", filesErr);
-          throw new Error(`Files processing failed: ${filesErr.message}`);
-        }
+      const user = await User.findById(userId);
+      if (user && user.email) {
+        await sendIssueCreatedEmail(
+          user.email,
+          user.name,
+          title,
+          category,
+          location
+        );
       }
-
-      // ✅ Save issue to DB
-      const issue = new Issue({
-        title,
-        category,
-        description,
-        location,
-        latitude,
-        longitude,
-        status: "Pending Approval",
-        userId,
-        images: imagePaths,
-        updates: ["Issue submitted and pending approval"]
-      });
-
-      await issue.save();
-
-      return res.status(201).json({ message: "Issue reported successfully", issue });
-    } catch (err) {
-      console.error("Error creating issue:", err);
-      return res.status(500).json({ message: "Internal Server Error" });
+    } catch (emailError) {
+      console.error("Failed to send email notification:", emailError);
+      // Don't fail the request if email fails
     }
-  });
+
+    return res.status(201).json({ message: "Issue reported successfully", issue });
+  } catch (err) {
+    console.error("Error creating issue:", err);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
 }

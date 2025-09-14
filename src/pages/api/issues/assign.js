@@ -1,9 +1,10 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import Issue from "@/models/Issue";
 import User from "@/models/User";
+import Notification from "@/models/Notification";
 import { verifyToken } from "@/middleware/auth";
-import { transporter } from "@/utils/mailer";
 import mongoose from "mongoose";
+import { sendIssueAssignmentEmail } from "@/utils/mailer";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -26,58 +27,40 @@ export default async function handler(req, res) {
     }
 
     const issueObjectId = new mongoose.Types.ObjectId(issueId);
-    const clerkObjectId = new mongoose.Types.ObjectId(clerkId);
-
-    // Get issue and clerk details
-    const issue = await Issue.findById(issueObjectId).populate('userId', 'name email');
-    const clerk = await User.findById(clerkObjectId);
+    const issue = await Issue.findById(issueObjectId);
 
     if (!issue) {
       return res.status(404).json({ message: "Issue not found" });
     }
 
-    if (!clerk) {
-      return res.status(404).json({ message: "Clerk not found" });
-    }
-
-    // Assign the issue to the clerk
     issue.assignedClerk = clerkId;
-    issue.status = "Under Review"; // Update status when assigned
     await issue.save();
 
-    // Send notification email to the clerk
+    // ✅ Create a notification for the assigned clerk
+    await Notification.create({
+      userId: clerkId,
+      message: `You have been assigned to issue: ${issue.title}`,
+      type: "Assignment",
+      read: false,
+      createdAt: new Date()
+    });
+
+    // Send email notification to the assigned clerk
     try {
-      await transporter.sendMail({
-        from: '"Community Service App" <noreply@communityapp.ca>',
-        to: clerk.email,
-        subject: "New Issue Assigned to You",
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #FF6B00;">New Issue Assignment</h2>
-            <p>Hello ${clerk.name},</p>
-            <p>A new issue has been assigned to you:</p>
-            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <h3 style="margin-top: 0;">${issue.title}</h3>
-              <p><strong>Category:</strong> ${issue.category}</p>
-              <p><strong>Location:</strong> ${issue.location}</p>
-              <p><strong>Description:</strong> ${issue.description}</p>
-              <p><strong>Reported by:</strong> ${issue.userId?.name || 'Unknown'}</p>
-              <p><strong>Reported on:</strong> ${new Date(issue.createdAt).toLocaleDateString()}</p>
-            </div>
-            <p>Please log into your dashboard to review and start working on this issue.</p>
-            <p>Best regards,<br>Community Service Team</p>
-          </div>
-        `,
-      });
+      const clerk = await User.findById(clerkId);
+      if (clerk && clerk.email) {
+        await sendIssueAssignmentEmail(
+          clerk.email,
+          clerk.name,
+          issue.title
+        );
+      }
     } catch (emailError) {
-      console.error("Error sending notification email:", emailError);
-      // Don't fail the assignment if email fails
+      console.error("Failed to send email notification:", emailError);
+      // Don't fail the request if email fails
     }
 
-    return res.status(200).json({ 
-      message: "Issue assigned to clerk successfully",
-      notificationSent: true
-    });
+    return res.status(200).json({ message: "Issue assigned to clerk successfully" });
   } catch (err) {
     console.error("Error assigning issue:", err);
     return res.status(500).json({ message: "Internal Server Error" });

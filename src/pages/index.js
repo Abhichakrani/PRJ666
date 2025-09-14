@@ -2,9 +2,12 @@ import { useRouter } from "next/router";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
+import LanguageToggle from "@/components/LanguageToggle";
 
 export default function HomePage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [slideIndex, setSlideIndex] = useState(0);
 
   const slides = [
@@ -22,45 +25,44 @@ export default function HomePage() {
   }, [slides.length]);
 
   return (
-    <div className="min-h-screen bg-black text-[#fdfaf5] font-sans transition-all duration-500">
+    <div className="min-h-screen bg-black text-[#fdfaf5] font-sans transition-all duration-500 overflow-x-hidden">
       {/* Header */}
       <header className="flex flex-col sm:flex-row justify-between items-center px-6 sm:px-10 py-6 bg-black text-white">
         <h1 className="text-2xl sm:text-3xl font-bold text-orange-500 tracking-wide">
-          Community Service App
+          {t("app_name")}
         </h1>
-        <div className="mt-4 sm:mt-0 space-x-4">
+        <div className="mt-4 sm:mt-0 space-x-4 flex items-center">
+          <LanguageToggle />
           <button
             onClick={() => router.push("/login")}
             className="px-4 py-2 border border-white rounded-full hover:bg-white hover:text-black transition"
           >
-            Login
+            {t("login")}
           </button>
           <button
             onClick={() => router.push("/register")}
             className="px-4 py-2 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition"
           >
-            Register
+            {t("register")}
           </button>
         </div>
       </header>
 
       {/* Intro Section */}
-      <section className="text-center px-6 sm:px-10 mt-12 max-w-4xl mx-auto">
-<h1 className="text-4xl sm:text-5xl font-extrabold text-orange-500 mb-2 leading-snug tracking-snug cursor-pointer transition-all duration-300 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-orange-400 hover:via-yellow-300 hover:to-orange-500">
-  Community Service App
-</h1>
-
+      <section className="text-center px-6 sm:px-10 mt-8 max-w-4xl mx-auto">
+        <h1 className="text-4xl sm:text-5xl font-extrabold text-orange-500 mb-2 leading-snug tracking-snug cursor-pointer transition-all duration-300 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-orange-400 hover:via-yellow-300 hover:to-orange-500">
+          {t("app_name")}
+        </h1>
         <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-[#fdfaf5]">
-          Making Ontario Better, One Report at a Time.
+          {t("tagline")}
         </h2>
         <p className="text-md sm:text-lg text-gray-300 leading-relaxed">
-          Our app empowers Ontario residents to report and track public issues like potholes,
-          illegal dumping, and broken lights — making local government more transparent and responsive.
+          {t("description")}
         </p>
       </section>
 
       {/* Image Slideshow with Blur */}
-      <div className="mt-16 relative flex justify-center items-center bg-black">
+      <div className="mt-12 relative flex justify-center items-center bg-black">
         <div className="absolute inset-0 overflow-hidden opacity-30 blur-sm scale-105 z-0">
           <Image
             src={slides[slideIndex]}
@@ -70,67 +72,220 @@ export default function HomePage() {
           />
         </div>
         <div className="relative z-10 w-[90%] max-w-4xl rounded-xl overflow-hidden shadow-2xl border border-[#222]">
-          <Image
-            src={slides[slideIndex]}
-            alt="Community Issue"
-            width={1200}
-            height={500}
-            className="object-cover w-full h-[400px]"
-          />
+          <div className="relative w-full h-[300px] sm:h-[400px]">
+            <Image
+              src={slides[slideIndex]}
+              alt="Community Issue"
+              fill
+              className="object-cover"
+            />
+          </div>
         </div>
       </div>
 
       {/* About Us Section */}
-      <section className="mt-20 px-10 py-12 bg-[#111] text-[#fdfaf5] text-center">
-        <h3 className="text-3xl font-bold text-orange-500 mb-6 tracking-wide">About Us</h3>
+      <section className="mt-16 px-6 sm:px-10 py-8 bg-[#111] text-[#fdfaf5] text-center">
+        <h3 className="text-3xl font-bold text-orange-500 mb-6 tracking-wide">{t("about_us")}</h3>
         <div className="max-w-4xl mx-auto text-gray-300 leading-relaxed space-y-4 text-md sm:text-lg">
-          <p>
-            The Community Service App is a modern digital platform designed to bridge the communication gap between Ontario residents and local municipal services.
-            It enables residents to report public issues such as potholes, broken streetlights, garbage overflow, and illegal dumping with just a few taps.
-          </p>
-          <p>
-            With multilingual support and a secure role-based access system, the app empowers residents, clerks, and administrators to collaborate efficiently.
-            Each report is tracked in real-time, providing status updates and promoting accountability and transparency at every level.
-          </p>
-          <p>
-            Built by a passionate team of developers, our goal is to simplify civic engagement and ensure local problems are addressed faster and more effectively.
-            Whether you are reporting an issue or managing municipal responses, the Community Service App is your gateway to a cleaner, safer, and more responsive Ontario.
-          </p>
+          <p>{t("about_text_1")}</p>
+          <p>{t("about_text_2")}</p>
+          <p>{t("about_text_3")}</p>
+        </div>
+      </section>
+
+      {/* Benefits Comparison Section */}
+      <section className="mt-16 px-6 sm:px-10 text-center">
+        <h3 className="text-3xl font-bold mb-2 text-orange-500 transition duration-300">
+          {t("benefits_title")}
+        </h3>
+        <p className="text-lg text-gray-300 mb-8">{t("benefits_subtitle")}</p>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-7xl mx-auto">
+          {/* Traditional Process */}
+          <div className="bg-red-900/20 border border-red-500/30 rounded-xl p-6">
+            <h4 className="text-2xl font-bold text-red-400 mb-6">{t("traditional_process")}</h4>
+            <div className="space-y-3 text-left">
+              <div className="flex items-center space-x-3">
+                <span className="text-red-400 text-xl">❌</span>
+                <span className="text-gray-300 text-sm">{t("traditional_step_1")}</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <span className="text-red-400 text-xl">❌</span>
+                <span className="text-gray-300 text-sm">{t("traditional_step_2")}</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <span className="text-red-400 text-xl">❌</span>
+                <span className="text-gray-300 text-sm">{t("traditional_step_3")}</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <span className="text-red-400 text-xl">❌</span>
+                <span className="text-gray-300 text-sm">{t("traditional_step_4")}</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <span className="text-red-400 text-xl">❌</span>
+                <span className="text-gray-300 text-sm">{t("traditional_step_5")}</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <span className="text-red-400 text-xl">❌</span>
+                <span className="text-gray-300 text-sm">{t("traditional_step_6")}</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <span className="text-red-400 text-xl">❌</span>
+                <span className="text-gray-300 text-sm">{t("traditional_step_7")}</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <span className="text-red-400 text-xl">❌</span>
+                <span className="text-gray-300 text-sm">{t("traditional_step_8")}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Digital Solution */}
+          <div className="bg-green-900/20 border border-green-500/30 rounded-xl p-6">
+            <h4 className="text-2xl font-bold text-green-400 mb-6">{t("digital_solution")}</h4>
+            <div className="space-y-3 text-left">
+              <div className="flex items-center space-x-3">
+                <span className="text-green-400 text-xl">✅</span>
+                <span className="text-gray-300 text-sm">{t("digital_step_1")}</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <span className="text-green-400 text-xl">✅</span>
+                <span className="text-gray-300 text-sm">{t("digital_step_2")}</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <span className="text-green-400 text-xl">✅</span>
+                <span className="text-gray-300 text-sm">{t("digital_step_3")}</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <span className="text-green-400 text-xl">✅</span>
+                <span className="text-gray-300 text-sm">{t("digital_step_4")}</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <span className="text-green-400 text-xl">✅</span>
+                <span className="text-gray-300 text-sm">{t("digital_step_5")}</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <span className="text-green-400 text-xl">✅</span>
+                <span className="text-gray-300 text-sm">{t("digital_step_6")}</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <span className="text-green-400 text-xl">✅</span>
+                <span className="text-gray-300 text-sm">{t("digital_step_7")}</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <span className="text-green-400 text-xl">✅</span>
+                <span className="text-gray-300 text-sm">{t("digital_step_8")}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Key Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-12 max-w-4xl mx-auto ">
+          <div className="bg-[#1a1a1a] p-4 rounded-xl">
+            <h5 className="text-xl font-bold text-orange-400 mb-2">{t("time_saved")}</h5>
+            <p className="text-gray-300 text-xs">{t("time_saved_desc")}</p>
+          </div>
+          <div className="bg-[#1a1a1a] p-4 rounded-xl">
+            <h5 className="text-xl font-bold text-orange-400 mb-2">{t("transparency")}</h5>
+            <p className="text-gray-300 text-xs">{t("transparency_desc")}</p>
+          </div>
+          <div className="bg-[#1a1a1a] p-4 rounded-xl">
+            <h5 className="text-xl font-bold text-orange-400 mb-2">{t("efficiency")}</h5>
+            <p className="text-gray-300 text-xs">{t("efficiency_desc")}</p>
+          </div>
+          <div className="bg-[#1a1a1a] p-4 rounded-xl">
+            <h5 className="text-xl font-bold text-orange-400 mb-2">{t("accessibility")}</h5>
+            <p className="text-gray-300 text-xs">{t("accessibility_desc")}</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Key Features Section */}
+      <section className="mt-16 px-6 sm:px-10 py-8 bg-[#111] text-center">
+        <h3 className="text-3xl font-bold text-orange-500 mb-8 tracking-wide">
+          {t("features_title")}
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-7xl mx-auto">
+          <div className="bg-[#1a1a1a] p-4 rounded-xl hover:shadow-lg hover:shadow-orange-500/20 transition-all duration-300">
+            <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span className="text-white font-bold text-lg">⚡</span>
+            </div>
+            <h4 className="text-base font-bold text-white mb-2">{t("feature_1_title")}</h4>
+            <p className="text-gray-300 text-xs">{t("feature_1_desc")}</p>
+          </div>
+          <div className="bg-[#1a1a1a] p-4 rounded-xl hover:shadow-lg hover:shadow-orange-500/20 transition-all duration-300">
+            <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span className="text-white font-bold text-lg">📊</span>
+            </div>
+            <h4 className="text-base font-bold text-white mb-2">{t("feature_2_title")}</h4>
+            <p className="text-gray-300 text-xs">{t("feature_2_desc")}</p>
+          </div>
+          <div className="bg-[#1a1a1a] p-4 rounded-xl hover:shadow-lg hover:shadow-orange-500/20 transition-all duration-300">
+            <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span className="text-white font-bold text-lg">🔔</span>
+            </div>
+            <h4 className="text-base font-bold text-white mb-2">{t("feature_3_title")}</h4>
+            <p className="text-gray-300 text-xs">{t("feature_3_desc")}</p>
+          </div>
+          <div className="bg-[#1a1a1a] p-4 rounded-xl hover:shadow-lg hover:shadow-orange-500/20 transition-all duration-300">
+            <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span className="text-white font-bold text-lg">🌐</span>
+            </div>
+            <h4 className="text-base font-bold text-white mb-2">{t("feature_4_title")}</h4>
+            <p className="text-gray-300 text-xs">{t("feature_4_desc")}</p>
+          </div>
+          <div className="bg-[#1a1a1a] p-4 rounded-xl hover:shadow-lg hover:shadow-orange-500/20 transition-all duration-300">
+            <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span className="text-white font-bold text-lg">📸</span>
+            </div>
+            <h4 className="text-base font-bold text-white mb-2">{t("feature_5_title")}</h4>
+            <p className="text-gray-300 text-xs">{t("feature_5_desc")}</p>
+          </div>
+          <div className="bg-[#1a1a1a] p-4 rounded-xl hover:shadow-lg hover:shadow-orange-500/20 transition-all duration-300">
+            <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span className="text-white font-bold text-lg">📍</span>
+            </div>
+            <h4 className="text-base font-bold text-white mb-2">{t("feature_6_title")}</h4>
+            <p className="text-gray-300 text-xs">{t("feature_6_desc")}</p>
+          </div>
+          <div className="bg-[#1a1a1a] p-4 rounded-xl hover:shadow-lg hover:shadow-orange-500/20 transition-all duration-300">
+            <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span className="text-white font-bold text-lg">🚨</span>
+            </div>
+            <h4 className="text-base font-bold text-white mb-2">{t("feature_7_title")}</h4>
+            <p className="text-gray-300 text-xs">{t("feature_7_desc")}</p>
+          </div>
+          <div className="bg-[#1a1a1a] p-4 rounded-xl hover:shadow-lg hover:shadow-orange-500/20 transition-all duration-300">
+            <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span className="text-white font-bold text-lg">📈</span>
+            </div>
+            <h4 className="text-base font-bold text-white mb-2">{t("feature_8_title")}</h4>
+            <p className="text-gray-300 text-xs">{t("feature_8_desc")}</p>
+          </div>
         </div>
       </section>
 
       {/* How it Works */}
-      <section className="mt-20 px-6 sm:px-10 text-center">
+      <section className="mt-16 px-6 sm:px-10 text-center">
         <h3 className="text-3xl font-bold mb-6 text-orange-500 transition duration-300 underline underline-offset-8">
-          How It Works
+          {t("how_it_works")}
         </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-10 mt-6 max-w-6xl mx-auto">
-          <div className="transition-transform duration-300 hover:scale-105 bg-[#1a1a1a] p-6 rounded-xl shadow-md">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-6 max-w-6xl mx-auto">
+          <div className="transition-transform duration-300 hover:scale-105 bg-[#1a1a1a] p-4 rounded-xl shadow-md">
             <h4 className="text-lg font-bold mb-2 text-white">
-              1.{" "}
-              <Link href="/register" className="text-orange-400 underline hover:text-orange-300">
-                Register
-              </Link>{" "}
-              or{" "}
-              <Link href="/login" className="text-orange-400 underline hover:text-orange-300">
-                Login
-              </Link>
+              1. <Link href="/register" className="text-orange-400 underline hover:text-orange-300">{t("register")}</Link> {" or "}
+              <Link href="/login" className="text-orange-400 underline hover:text-orange-300">{t("login")}</Link>
             </h4>
-            <p className="text-gray-300">
-              Create your account to access the complaint reporting system.
-            </p>
+            <p className="text-gray-300 text-sm">{t("step_1_desc")}</p>
           </div>
-          <div className="transition-transform duration-300 hover:scale-105 bg-[#1a1a1a] p-6 rounded-xl shadow-md">
-            <h4 className="text-lg font-bold mb-2 text-white">2. Report an Issue.</h4>
-            <p className="text-gray-300">
-              Submit complaints with location, photo, and description.
-            </p>
+          <div className="transition-transform duration-300 hover:scale-105 bg-[#1a1a1a] p-4 rounded-xl shadow-md">
+            <h4 className="text-lg font-bold mb-2 text-white">2. {t("step_2")}</h4>
+            <p className="text-gray-300 text-sm">{t("step_2_desc")}</p>
           </div>
-          <div className="transition-transform duration-300 hover:scale-105 bg-[#1a1a1a] p-6 rounded-xl shadow-md">
-            <h4 className="text-lg font-bold mb-2 text-white">3. Track & Get Updates</h4>
-            <p className="text-gray-300">
-              Get notified when the issue is acknowledged and resolved.
-            </p>
+          <div className="transition-transform duration-300 hover:scale-105 bg-[#1a1a1a] p-4 rounded-xl shadow-md">
+            <h4 className="text-lg font-bold mb-2 text-white">3. {t("step_3")}</h4>
+            <p className="text-gray-300 text-sm">{t("step_3_desc")}</p>
           </div>
         </div>
       </section>
@@ -140,13 +295,13 @@ export default function HomePage() {
         <h3 className="text-3xl font-bold text-center text-orange-500 mb-10 tracking-wide">
           Meet the Team
         </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6 justify-items-center">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8 justify-items-center">
           {[
             { name: "Sanskar Pardesi", gender: "male" },
             { name: "Vrunda Patel", gender: "female" },
-            { name: "Yash Patel", gender: "male" },
-            { name: "Nadi Lin", gender: "female" },
             { name: "Abhi Chakrani", gender: "male" },
+            { name: "Nadi Lin", gender: "female" },
+            { name: "Yash Patel", gender: "male" },
           ].map((member, idx) => (
             <div
               key={idx}
@@ -172,8 +327,8 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="text-center text-sm py-6 text-gray-400 bg-black">
-        &copy; 2025 Community Service App – ReportEase. All rights reserved.
+      <footer className="text-center text-sm py-4 text-gray-400 bg-black">
+        {t("footer")}
       </footer>
     </div>
   );

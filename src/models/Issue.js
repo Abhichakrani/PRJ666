@@ -14,6 +14,11 @@ const issueSchema = new mongoose.Schema(
       enum: ["Pending Approval", "Under Review", "Resolved", "Rejected"],
       default: "Pending Approval",
     },
+    priority: {
+      type: String,
+      enum: ["Low", "Medium", "High", "Critical"],
+      default: "Medium",
+    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -23,11 +28,17 @@ const issueSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
-    updates: {
-      type: Array,
-      default: []
-    },
-
+    updates: [
+      {
+        text: { type: String, required: true },
+        status: {
+          type: String,
+          enum: ["Pending Approval", "Under Review", "Resolved", "Rejected"],
+          required: true
+        },
+        timestamp: { type: Date, default: Date.now }
+      }
+    ],
     feedbacks: [
       {
         rating: { type: Number, required: true, min: 1, max: 5 },

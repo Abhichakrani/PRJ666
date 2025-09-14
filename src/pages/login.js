@@ -84,17 +84,17 @@ export default function Login() {
 
           <div className="flex items-center gap-3 mb-6">
             <button
-              type="button"
-              onClick={() => router.push("/register")}
-              className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-full font-semibold shadow-md transition"
-            >
-              Sign Up
-            </button>
-            <button
-              type="submit"
-              className="border border-black text-black px-6 py-2 rounded-full font-semibold hover:bg-black hover:text-white transition"
+               type="submit"
+             className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-full font-semibold shadow-md transition"
             >
               Log In
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push("/register")}
+              className="border border-black text-black px-6 py-2 rounded-full font-semibold hover:bg-black hover:text-white transition"
+            >
+              Sign Up
             </button>
           </div>
 

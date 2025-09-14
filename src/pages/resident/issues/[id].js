@@ -2,7 +2,8 @@ import { useRouter } from "next/router";
 import { useEffect, useState, useRef } from "react";
 import withAuth from "@/utils/withAuth";
 import MapDisplay from "@/components/MapDisplay";
-
+import NotificationBell from "@/components/shared/NotificationBell";
+import SettingsMenu from "@/components/shared/SettingsMenu";
 function IssueDetailsPage() {
   const { query } = useRouter();
   const { id } = query;
@@ -82,96 +83,66 @@ function IssueDetailsPage() {
   if (!issue) return <p className="p-10 text-red-500">Issue not found</p>;
 
   return (
-    <div className="flex min-h-screen">
-      {/* Left Side - Issue Details */}
-      <div className="w-2/3 p-8 bg-[#fdfaf5]">
-        <div className="flex justify-between items-start mb-6 relative">
-          <h1 className="text-4xl font-bold text-orange-500">Issue Details (User)</h1>
-          <div className="flex items-center gap-4 text-black relative">
-            {/* Notifications */}
-            <div ref={notificationsRef} className="relative">
-              <span
-                className="text-2xl cursor-pointer"
-                onClick={() => setShowNotifications((prev) => !prev)}
-              >
-                🔔
-              </span>
-              {showNotifications && (
-                <div className="absolute right-0 mt-2 w-56 bg-white text-black border rounded shadow-md z-20">
-                  <div className="p-4 text-sm text-gray-700">No new notifications</div>
-                </div>
-              )}
-            </div>
+    <div className="min-h-screen flex bg-[#f8f7f3]">
+  <div className="flex-1 p-8 pr-0 flex flex-col">
+    <div className="flex items-center justify-between mb-6">
+      <h1 className="text-4xl font-bold text-orange-500">Issue Details (User)</h1>
+      <div className="flex items-center gap-4 text-black relative">
+        <NotificationBell />
+        <SettingsMenu />
+      </div>
+    </div>
 
-            {/* Settings */}
-            <div ref={settingsRef} className="relative">
-              <span
-                className="text-2xl cursor-pointer"
-                onClick={() => setShowSettings((prev) => !prev)}
-              >
-                ⚙️
+    <div className="flex-1 overflow-y-auto pr-8">
+      <div className="bg-white rounded-xl p-6 shadow-lg mb-6">
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">{issue.title}</h2>
+            <div className="flex items-center gap-4">
+              <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full font-semibold">
+                {issue.category}
               </span>
-              {showSettings && (
-                <div className="absolute right-0 mt-2 w-40 bg-white text-black border rounded shadow-md z-20">
-                  <button
-                    onClick={handleLogout}
-                    className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-                  >
-                    Logout
-                  </button>
-                </div>
-              )}
+              <span className="px-3 py-1 rounded-full font-semibold bg-gray-200 text-gray-800">
+                Filed
+              </span>
             </div>
+          </div>
+          <div className="text-right text-gray-600">
+            <p>Filed: {new Date(issue.createdAt).toLocaleDateString()}</p>
+            <p>ID: {issue._id?.slice(-8) || 'N/A'}</p>
           </div>
         </div>
 
-        {/* Title */}
-        <h2 className="text-2xl font-bold text-black mb-4">{issue.title}</h2>
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Description</h3>
+          <p className="text-gray-700 leading-relaxed">{issue.description}</p>
+        </div>
 
-        {/* Filed Date */}
-        <p className="text-lg text-gray-600 mb-6">
-          Filed On: {new Date(issue.createdAt).toLocaleDateString()}
-        </p>
-
-        {/* Category */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between bg-gray-100 p-4 rounded-lg border">
-            <span className="text-lg text-gray-700">{issue.category}</span>
-            <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Location</h3>
+          <p className="text-gray-700 mb-4">{issue.location}</p>
+          <div className="rounded-xl overflow-hidden border-2 border-gray-300">
+            <MapDisplay lat={issue.latitude} lng={issue.longitude} interactive={false} />
           </div>
         </div>
 
-        {/* Description */}
-        <p className="text-lg text-gray-700 leading-relaxed mb-8">
-          {issue.description}
-        </p>
-
-        {/* Location Section */}
-        <div className="mb-8">
-          <h3 className="text-2xl font-semibold text-black mb-4">Location</h3>
-          <MapDisplay
-            lat={issue.latitude}
-            lng={issue.longitude}
-            interactive={false}
-          />
-        </div>
-
-        {/* Download Files */}
         {issue.images?.length > 0 && (
-          <a
-            href={issue.images[0]}
-            className="block text-center border-2 border-black py-4 w-full rounded-full font-bold text-lg hover:bg-gray-100 transition-colors"
-            download
-          >
-            ↓ Download Issue Files
-          </a>
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Attached Files</h3>
+            <button
+              onClick={() => window.open(issue.images[0], "_blank")}
+              className="w-full border border-gray-400 rounded-full py-2 flex items-center justify-center gap-2 text-lg font-semibold hover:bg-gray-100 transition"
+            >
+              <span>📎</span> Download Issue Files ({issue.images.length} file{issue.images.length > 1 ? "s" : ""})
+            </button>
+          </div>
         )}
       </div>
+    </div>
+</div>
 
       {/* Right Panel - Updates & Feedback */}
-      <div className="w-1/3 bg-black text-white p-8">
+      <div className="w-1/3 bg-black text-white flex flex-col items-center p-12">
         <h2 className="text-4xl font-bold text-orange-400 mb-8">Updates</h2>
 
         <div className="space-y-6 mb-12">
@@ -183,74 +154,84 @@ function IssueDetailsPage() {
               <div
                 className={`inline-block px-4 py-2 rounded-full text-black font-bold text-sm ${
                   update.status === "Pending Approval"
-                    ? "bg-blue-300"
+                    ? "bg-blue-200 text-blue-900"
                     : update.status === "Under Review"
-                    ? "bg-yellow-300"
+                    ? "bg-yellow-100 text-yellow-900"
                     : update.status === "Resolved"
-                    ? "bg-green-300"
+                    ? "bg-green-100 text-green-900"
                     : update.status === "Rejected"
-                    ? "bg-red-300"
+                    ? "bg-red-100 text-red-900"
                     : "bg-white"
                 }`}
               >
                 • {update.status}
               </div>
+              <div>{update.timestamp && (
+          <span className="text-gray-400 text-xs italic mt-1">
+            {new Date(update.timestamp).toLocaleString()}
+          </span>
+        )}</div>
             </div>
           ))}
         </div>
 
         {/* Feedback Section */}
-        <div className="border-gray-600 pt-8">
-          <textarea
-            placeholder="Feedback"
-            className="w-full bg-transparent border-b border-white-400 focus:outline-none focus:border-white py-2 placeholder-gray-300"
-            value={feedbackText}
-            onChange={(e) => setFeedbackText(e.target.value)}
-          />
+        {/* Feedback Section */}
+<div className="w-full mt-4">
+  <h2 className="text-2xl font-bold text-orange-400 mb-4">Leave Feedback</h2>
 
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex space-x-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  onClick={() => setFeedback(star)}
-                  className="text-4xl focus:outline-none transition-all duration-200"
-                >
-                  <span
-                    className={`${
-                      feedback >= star ? "text-yellow-400" : "text-transparent"
-                    }`}
-                    style={{
-                      WebkitTextStroke: feedback >= star ? "0" : "2px white",
-                      textStroke: feedback >= star ? "0" : "2px white",
-                    }}
-                  >
-                    ★
-                  </span>
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={handleRating}
-              className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-3 rounded-full text-lg transition-colors"
-            >
-              Submit
-            </button>
-          </div>
+  <textarea
+    placeholder="Write your feedback..."
+    className="w-full bg-black border border-gray-600 rounded-md p-4 text-white placeholder-gray-400 mb-4 focus:outline-none focus:border-white"
+    value={feedbackText}
+    onChange={(e) => setFeedbackText(e.target.value)}
+  />
 
-          <button
-            onClick={handleWithdraw}
-            className="w-full border-2 border-red-400 text-red-400 font-bold py-4 rounded-full hover:bg-red-400 hover:text-white text-lg transition-all duration-200 mb-6"
+  <div className="flex items-center justify-between mb-6 w-full">
+    <div className="flex space-x-2">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          onClick={() => setFeedback(star)}
+          className="text-4xl focus:outline-none transition-all duration-200"
+        >
+          <span
+            className={`${
+              feedback >= star ? "text-yellow-400" : "text-transparent"
+            }`}
+            style={{
+              WebkitTextStroke: feedback >= star ? "0" : "2px white",
+              textStroke: feedback >= star ? "0" : "2px white",
+            }}
           >
-            Withdraw
-          </button>
+            ★
+          </span>
+        </button>
+      ))}
+    </div>
+    <button
+      onClick={handleRating}
+      className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-full text-lg transition-colors"
+    >
+      Submit
+    </button>
+  </div>
 
-          {message && (
-            <p className="text-green-400 text-lg font-medium">{message}</p>
-          )}
-        </div>
+  <button
+    onClick={handleWithdraw}
+    className="w-full border-2 border-red-400 text-red-400 font-bold py-4 rounded-full hover:bg-red-400 hover:text-white text-lg transition-all duration-200 mb-6"
+  >
+    Withdraw
+  </button>
+
+  {message && (
+    <p className="text-green-400 text-lg font-medium">{message}</p>
+  )}
+</div>
+
       </div>
     </div>
+    
   );
 }
 

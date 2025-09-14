@@ -3,6 +3,8 @@ import { FiArrowRight } from "react-icons/fi";
 import { useRouter } from "next/router";
 import withAuth from "@/utils/withAuth";
 import MapDisplay from "@/components/MapDisplay";
+import NotificationBell from "@/components/shared/NotificationBell";
+import SettingsMenu from "@/components/shared/SettingsMenu";
 
 function ResidentDashboard() {
   const router = useRouter();
@@ -16,7 +18,7 @@ function ResidentDashboard() {
   const [images, setImages] = useState([]);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
-  const [latLng, setLatLng] = useState({ lat: 43.65107, lng: -79.347015 }); // Default: Toronto
+  const [latLng, setLatLng] = useState({ lat: 43.65107, lng: -79.347015 });
 
   useEffect(() => {
     const fetchIssues = async () => {
@@ -37,6 +39,78 @@ function ResidentDashboard() {
 
     setTimeout(fetchIssues, 100);
   }, [success]);
+
+  const uploadToCloudinary = async (file) => {
+    const data = new FormData();
+    data.append("file", file);
+    data.append("upload_preset", "unsigned_community_upload"); // must match your Cloudinary preset name
+    data.append("cloud_name", "dcdorfdv7");
+  
+    const res = await fetch("https://api.cloudinary.com/v1_1/dcdorfdv7/image/upload", {
+      method: "POST",
+      body: data,
+    });
+  
+    const result = await res.json();
+    return result.secure_url; // this is the hosted URL of the uploaded image
+  };
+  
+  
+
+
+
+
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSuccess("");
+    setError("");
+  
+    try {
+      const token = localStorage.getItem("token");
+  
+      // Step 1: Upload all images to Cloudinary
+      const uploadedUrls = await Promise.all(
+        images.map((img) => uploadToCloudinary(img.file))
+      );
+  
+      // Step 2: Build the body with Cloudinary URLs
+      const body = {
+        ...formData,
+        latitude: latLng.lat,
+        longitude: latLng.lng,
+        images: uploadedUrls,
+      };
+  
+      // Step 3: Submit to your API
+      const res = await fetch("/api/report", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+  
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || data.message || "Submission failed");
+      }
+  
+      setSuccess("Complaint submitted successfully!");
+      handleClear();
+    } catch (err) {
+      console.error("Submit error:", err);
+      setError(err.message);
+    }
+  };
+  
+
+  const handleClear = () => {
+    setFormData({ title: "", category: "", description: "", location: "" });
+    setImages([]);
+    setLatLng({ lat: 43.65107, lng: -79.347015 });
+  };
 
   const handleChange = async (e) => {
     const { name, value } = e.target;
@@ -109,45 +183,6 @@ function ResidentDashboard() {
     setError("");
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSuccess("");
-    setError("");
-
-    try {
-      const token = localStorage.getItem("token");
-      const body = new FormData();
-      Object.entries(formData).forEach(([key, value]) => body.append(key, value));
-      images.forEach((imgObj) => body.append("images", imgObj.file));
-      body.append("latitude", latLng.lat);
-      body.append("longitude", latLng.lng);
-
-      console.log("Submitting form with images:", images.length);
-      
-      const res = await fetch("/api/report", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body,
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || data.message || "Submission failed");
-      }
-
-      setSuccess("Complaint submitted successfully!");
-      handleClear();
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const handleClear = () => {
-    setFormData({ title: "", category: "", description: "", location: "" });
-    setImages([]);
-    setLatLng({ lat: 43.65107, lng: -79.347015 });
-  };
-
   const groupedIssues = issues.reduce((acc, issue) => {
     if (!acc[issue.status]) acc[issue.status] = [];
     acc[issue.status].push(issue);
@@ -179,13 +214,12 @@ function ResidentDashboard() {
 
   return (
     <div className="min-h-screen flex font-sans">
-      {/* Left Panel – Dashboard */}
       <div className="w-1/2 bg-[#fdfaf5] p-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-4xl font-bold text-orange-500">User Dashboard</h2>
           <div className="flex items-center gap-4 text-black">
-            <span className="text-2xl">🔔</span>
-            <span className="text-2xl">⚙️</span>
+            <NotificationBell />
+            <SettingsMenu />
           </div>
         </div>
 
@@ -195,7 +229,6 @@ function ResidentDashboard() {
         {renderCard("Rejected", "#f8d7da")}
       </div>
 
-      {/* Right Panel – Complaint Form */}
       <div className="w-1/2 bg-black text-white p-10 flex flex-col justify-center">
         <h2 className="text-xl sm:text-4xl font-semibold text-orange-500 mb-6 justify-center">
           Create a new complaint
@@ -218,9 +251,7 @@ function ResidentDashboard() {
             className="w-full bg-black border-b border-gray-400 focus:outline-none focus:border-white py-2 text-gray-300"
             required
           >
-            <option value="" disabled hidden className="text-gray-400">
-              Category
-            </option>
+            <option value="" disabled hidden>Category</option>
             <option value="Garbage">Garbage</option>
             <option value="Pothole">Pothole</option>
             <option value="Streetlight">Streetlight</option>
@@ -256,7 +287,15 @@ function ResidentDashboard() {
           </div>
 
           <div className="rounded-xl overflow-hidden">
-            <MapDisplay lat={latLng.lat} lng={latLng.lng} setLatLng={setLatLng} setAddress={(addr) => setFormData((prev) => ({ ...prev, location: addr }))} interactive={true} />
+            <MapDisplay
+              lat={latLng.lat}
+              lng={latLng.lng}
+              setLatLng={setLatLng}
+              setAddress={(addr) =>
+                setFormData((prev) => ({ ...prev, location: addr }))
+              }
+              interactive={true}
+            />
           </div>
 
           <input type="file" multiple accept="image/*" onChange={handleImageChange} hidden id="fileInput" />
